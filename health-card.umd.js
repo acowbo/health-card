@@ -4,131 +4,213 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.HealthCard = {}, global.React));
 })(this, (function (exports, React) { 'use strict';
 
-  const S = {
-    card: { fontFamily:"-apple-system,'PingFang SC',sans-serif", background:'linear-gradient(145deg,#1a1a2e,#16213e)', borderRadius:'24px', padding:'24px', color:'#fff', boxShadow:'0 20px 60px rgba(0,0,0,0.4)', width:'100%', maxWidth:'380px', margin:'0 auto', boxSizing:'border-box' },
-    header: { display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'20px' },
-    dateLabel: { fontSize:'12px', color:'rgba(255,255,255,0.5)', marginBottom:'4px' },
-    title: { fontSize:'18px', fontWeight:700 },
-    weightRow: { display:'flex', alignItems:'flex-end', gap:'12px', marginBottom:'22px', paddingBottom:'20px', borderBottom:'1px solid rgba(255,255,255,0.08)' },
-    weightVal: { fontSize:'48px', fontWeight:800, lineHeight:1, background:'linear-gradient(135deg,#63b3ed,#9f7aea)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' },
-    weightUnit: { fontSize:'16px', color:'rgba(255,255,255,0.5)' },
-    wTarget: { fontSize:'11px', color:'rgba(255,255,255,0.35)', marginLeft:'auto', alignSelf:'flex-end' },
-    secLabel: { fontSize:'11px', color:'rgba(255,255,255,0.4)', letterSpacing:'0.8px', marginBottom:'12px' },
-    calRow: { display:'flex', justifyContent:'space-between', marginBottom:'10px' },
-    calItem: { textAlign:'center' },
-    dot: { color:'rgba(255,255,255,0.15)', fontSize:'20px', alignSelf:'center' },
-    progBg: { height:'6px', background:'rgba(255,255,255,0.08)', borderRadius:'6px', overflow:'hidden' },
-    progMeta: { display:'flex', justifyContent:'space-between', marginTop:'5px', fontSize:'10px', color:'rgba(255,255,255,0.35)' },
-    exBox: { display:'flex', alignItems:'center', gap:'12px', padding:'14px', background:'rgba(255,255,255,0.05)', borderRadius:'14px', marginBottom:'18px' },
-    exIcon: { width:'40px', height:'40px', background:'linear-gradient(135deg,#48c78e,#38b2ac)', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', flexShrink:0 },
-    exName: { fontSize:'14px', fontWeight:600 },
-    exDetail: { fontSize:'11px', color:'rgba(255,255,255,0.4)', marginTop:'2px' },
-    exCal: { fontSize:'13px', fontWeight:700, color:'#48c78e', marginLeft:'auto' },
-    tipBox: { background:'linear-gradient(135deg,rgba(99,179,237,0.12),rgba(159,122,234,0.12))', border:'1px solid rgba(99,179,237,0.2)', borderRadius:'14px', padding:'12px 16px' },
-    tipText: { fontSize:'12px', color:'rgba(255,255,255,0.7)', lineHeight:1.6 },
-    footer: { display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'18px', paddingTop:'14px', borderTop:'1px solid rgba(255,255,255,0.06)' },
-    brand: { fontSize:'11px', color:'rgba(255,255,255,0.2)' },
-    goalTxt: { fontSize:'11px', color:'rgba(255,255,255,0.35)' },
-    goalHi: { color:'#9f7aea', fontWeight:600 },
-  };
-
-  function badge(s) {
-    const m = {
-      '优秀': ['rgba(72,199,142,0.2)', '#48c78e', 'rgba(72,199,142,0.4)'],
-      '良好': ['rgba(99,179,237,0.2)', '#63b3ed', 'rgba(99,179,237,0.4)'],
-      '需改善': ['rgba(252,129,74,0.2)', '#fc814a', 'rgba(252,129,74,0.4)'],
-    };
-    const c = m[s] || m['良好'];
-    return { padding:'5px 14px', borderRadius:'20px', fontSize:'12px', fontWeight:600, background:c[0], color:c[1], border:'1px solid '+c[2] };
-  }
-
+  /**
+   * 瘦得漂亮 AI · 健康日报卡片 v2
+   * 覆盖功能点：单日分析 / 多日趋势 / 饮食运动推荐
+   * 所有 props 均为字符串，避免平台传参类型问题
+   *
+   * Props:
+   *   date          - "2026年3月15日"
+   *   weight        - "67.5"
+   *   weightChange  - "↓0.3"（含方向符号）或 "+0.5"
+   *   targetWeight  - "62"
+   *   goalProgress  - "45% 已完成"
+   *   calIn         - "1480"
+   *   calOut        - "320"
+   *   calNet        - "+1160" 或 "-200"
+   *   exercise      - "跑步 35分钟 · 320kcal"
+   *   diet          - "三餐均衡，蛋白质偏少"（可选）
+   *   tip           - AI 建议文字
+   *   status        - "优秀" | "良好" | "需改善"
+   *   phase         - "减脂期" | "维持期" | "增肌期"（可选）
+   */
   function HealthCard(props) {
     props = props || {};
-    const weight  = props.weight        != null ? props.weight        : '—';
-    const wChange = props.weightChange  != null ? Number(props.weightChange) : 0;
-    const target  = props.targetWeight  != null ? props.targetWeight  : '—';
-    const calIn   = props.caloriesIn    != null ? Number(props.caloriesIn)   : 0;
-    const calOut  = props.caloriesOut   != null ? Number(props.caloriesOut)  : 0;
-    const calGoal = props.calorieTarget != null ? Number(props.calorieTarget): 1650;
-    const exType  = props.exerciseType    || '暂无运动';
-    const exDur   = props.exerciseDuration ? Number(props.exerciseDuration) : 0;
-    const exIcon  = props.exerciseIcon    || '🏃';
-    const status  = props.status          || '良好';
-    const tip     = props.tip             || '';
-    const now     = new Date();
-    const date    = props.date || (now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日');
 
-    const calNet = calIn - calOut;
-    const pct    = calGoal > 0 ? Math.min((calIn / calGoal) * 100, 100) : 0;
-    const over   = calIn > calGoal;
-    const gap    = (typeof weight==='number' && typeof target==='number') ? (weight-target).toFixed(1) : null;
-    const chgTxt = wChange < 0 ? '↓ '+Math.abs(wChange)+' kg' : wChange > 0 ? '↑ '+wChange+' kg' : '持平';
-    const chgStyle = { fontSize:'13px', padding:'3px 10px', borderRadius:'12px', fontWeight:600, marginBottom:'6px',
-      background: wChange<0?'rgba(72,199,142,0.15)':wChange>0?'rgba(252,129,74,0.15)':'rgba(255,255,255,0.08)',
-      color: wChange<0?'#48c78e':wChange>0?'#fc814a':'rgba(255,255,255,0.5)' };
-    const calValStyle = (t) => ({ fontSize:'22px', fontWeight:700, color:{in:'#fc814a',out:'#48c78e',net:'#9f7aea'}[t]||'#fff' });
-    const fillStyle = { height:'100%', borderRadius:'6px', width:pct+'%',
-      background: over ? 'linear-gradient(90deg,#fc814a,#f56565)' : 'linear-gradient(90deg,#63b3ed,#9f7aea)' };
+    const p = {
+      date:         String(props.date         || ''),
+      weight:       String(props.weight       || '—'),
+      weightChange: String(props.weightChange || ''),
+      targetWeight: String(props.targetWeight || '—'),
+      goalProgress: String(props.goalProgress || ''),
+      calIn:        String(props.calIn        || ''),
+      calOut:       String(props.calOut       || ''),
+      calNet:       String(props.calNet       || ''),
+      exercise:     String(props.exercise     || ''),
+      diet:         String(props.diet         || ''),
+      tip:          String(props.tip          || '今日数据已记录，加油！'),
+      status:       String(props.status       || '良好'),
+      phase:        String(props.phase        || ''),
+    };
 
-    return React.createElement('div', {style: S.card},
-      React.createElement('div', {style: S.header},
-        React.createElement('div', null,
-          React.createElement('div', {style: S.dateLabel}, date),
-          React.createElement('div', {style: S.title}, '健康日报 📋')
-        ),
-        React.createElement('div', {style: badge(status)}, status)
-      ),
-      React.createElement('div', {style: S.weightRow},
-        React.createElement('div', {style: {display:'flex',alignItems:'baseline',gap:'4px'}},
-          React.createElement('div', {style: S.weightVal}, String(weight)),
-          React.createElement('div', {style: S.weightUnit}, 'kg')
-        ),
-        React.createElement('div', {style: chgStyle}, chgTxt),
-        React.createElement('div', {style: S.wTarget}, '目标 '+target+' kg')
-      ),
-      React.createElement('div', {style: {marginBottom:'20px'}},
-        React.createElement('div', {style: S.secLabel}, '热量收支'),
-        React.createElement('div', {style: S.calRow},
-          React.createElement('div', {style: S.calItem},
-            React.createElement('div', {style: calValStyle('in')}, String(calIn)),
-            React.createElement('div', {style: {fontSize:'10px',color:'rgba(255,255,255,0.4)',marginTop:'2px'}}, '摄入 kcal')
+    // ── 状态色 ──
+    const statusMap = {
+      '优秀':  { bg:'rgba(72,199,142,0.15)', color:'#48c78e', border:'rgba(72,199,142,0.35)', glow:'0 0 12px rgba(72,199,142,0.25)' },
+      '良好':  { bg:'rgba(99,179,237,0.15)', color:'#63b3ed', border:'rgba(99,179,237,0.35)', glow:'0 0 12px rgba(99,179,237,0.25)' },
+      '需改善':{ bg:'rgba(252,129,74,0.15)', color:'#fc814a', border:'rgba(252,129,74,0.35)', glow:'0 0 12px rgba(252,129,74,0.25)' },
+    };
+    const sc = statusMap[p.status] || statusMap['良好'];
+
+    // ── 净值色 ──
+    const netNum    = parseFloat(p.calNet) || 0;
+    const netColor  = netNum > 200 ? '#fc814a' : netNum < -50 ? '#48c78e' : '#63b3ed';
+
+    // ── 体重变化色 ──
+    const isDown    = p.weightChange.startsWith('↓') || p.weightChange.startsWith('-');
+    const isUp      = p.weightChange.startsWith('↑') || (p.weightChange.startsWith('+') && p.weightChange !== '+0');
+    const chgColor  = isDown ? '#48c78e' : isUp ? '#fc814a' : 'rgba(255,255,255,0.4)';
+
+    const el = React.createElement;
+
+    // ── 通用容器 ──
+    const card = (style, ...children) => el('div', { style }, ...children);
+
+    return card({
+      fontFamily: "-apple-system,'PingFang SC','Helvetica Neue',sans-serif",
+      background: 'linear-gradient(160deg,#0f0c29 0%,#1a1040 50%,#1e1b4b 100%)',
+      borderRadius: '24px',
+      padding: '0',
+      color: '#fff',
+      maxWidth: '380px',
+      width: '100%',
+      margin: '0 auto',
+      boxSizing: 'border-box',
+      boxShadow: '0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07)',
+      overflow: 'hidden',
+      position: 'relative',
+    },
+
+      /* 顶部渐变装饰条 */
+      card({ height: '3px', background: 'linear-gradient(90deg,#6366f1,#8b5cf6,#a78bfa,#63b3ed)', flexShrink: 0 }),
+
+      /* 内容区 */
+      card({ padding: '20px' },
+
+        /* ─── 头部 ─── */
+        card({ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'18px' },
+          card({ flex: 1 },
+            p.date ? card({ fontSize:'11px', color:'rgba(255,255,255,0.35)', marginBottom:'3px', letterSpacing:'0.5px' }, p.date) : null,
+            card({ display:'flex', alignItems:'center', gap:'8px' },
+              card({ fontSize:'16px', fontWeight:700, letterSpacing:'0.3px' }, '健康日报'),
+              p.phase ? card({
+                fontSize:'10px', padding:'2px 8px', borderRadius:'10px',
+                background:'rgba(139,92,246,0.2)', color:'#a78bfa', border:'1px solid rgba(139,92,246,0.3)',
+                fontWeight:500,
+              }, p.phase) : null
+            )
           ),
-          React.createElement('div', {style: S.dot}, '·'),
-          React.createElement('div', {style: S.calItem},
-            React.createElement('div', {style: calValStyle('out')}, String(calOut)),
-            React.createElement('div', {style: {fontSize:'10px',color:'rgba(255,255,255,0.4)',marginTop:'2px'}}, '消耗 kcal')
+          card({
+            padding:'5px 13px', borderRadius:'20px', fontSize:'12px', fontWeight:600,
+            background: sc.bg, color: sc.color, border:'1px solid '+sc.border,
+            boxShadow: sc.glow, flexShrink: 0,
+          }, p.status)
+        ),
+
+        /* ─── 体重主区域 ─── */
+        card({
+          display:'flex', alignItems:'flex-end', gap:'12px',
+          marginBottom:'18px', paddingBottom:'18px',
+          borderBottom:'1px solid rgba(255,255,255,0.07)',
+        },
+          card({ flex: 1 },
+            card({ display:'flex', alignItems:'baseline', gap:'6px', lineHeight:1 },
+              card({
+                fontSize:'52px', fontWeight:900, lineHeight:1,
+                background:'linear-gradient(135deg,#a5b4fc,#818cf8,#6366f1)',
+                WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
+                fontVariantNumeric:'tabular-nums',
+              }, p.weight),
+              card({ fontSize:'16px', color:'rgba(255,255,255,0.4)', paddingBottom:'8px' }, 'kg')
+            ),
+            p.weightChange
+              ? card({ display:'flex', alignItems:'center', gap:'6px', marginTop:'6px' },
+                  card({
+                    fontSize:'12px', padding:'3px 10px', borderRadius:'10px', fontWeight:600,
+                    background: isDown?'rgba(72,199,142,0.12)':isUp?'rgba(252,129,74,0.12)':'rgba(255,255,255,0.06)',
+                    color: chgColor, border:'1px solid '+chgColor.replace(')',',0.3)').replace('rgb','rgba'),
+                  }, p.weightChange+' kg')
+                )
+              : null
           ),
-          React.createElement('div', {style: S.dot}, '·'),
-          React.createElement('div', {style: S.calItem},
-            React.createElement('div', {style: calValStyle('net')}, (calNet>=0?'+':'')+calNet),
-            React.createElement('div', {style: {fontSize:'10px',color:'rgba(255,255,255,0.4)',marginTop:'2px'}}, '净值 kcal')
+          card({ textAlign:'right' },
+            card({ fontSize:'10px', color:'rgba(255,255,255,0.3)', marginBottom:'3px' }, '目标'),
+            card({ fontSize:'20px', fontWeight:700, color:'rgba(255,255,255,0.6)' }, p.targetWeight),
+            card({ fontSize:'10px', color:'rgba(255,255,255,0.3)' }, 'kg'),
+            p.goalProgress ? card({ fontSize:'10px', color:'#a78bfa', marginTop:'4px' }, p.goalProgress) : null
           )
         ),
-        React.createElement('div', {style: S.progBg},
-          React.createElement('div', {style: fillStyle})
+
+        /* ─── 热量区域（有数据才显示）─── */
+        (p.calIn || p.calNet) ? card({ marginBottom:'14px' },
+          card({ fontSize:'10px', color:'rgba(255,255,255,0.3)', letterSpacing:'0.8px', marginBottom:'10px' }, 'CALORIE'),
+          card({ display:'flex', gap:'8px' },
+            /* 摄入 */
+            p.calIn ? card({
+              flex:1, padding:'10px 12px', borderRadius:'12px',
+              background:'rgba(252,129,74,0.08)', border:'1px solid rgba(252,129,74,0.15)',
+            },
+              card({ fontSize:'10px', color:'rgba(252,129,74,0.7)', marginBottom:'3px' }, '摄入'),
+              card({ fontSize:'18px', fontWeight:700, color:'#fc814a' }, p.calIn),
+              card({ fontSize:'9px', color:'rgba(255,255,255,0.25)' }, 'kcal')
+            ) : null,
+            /* 消耗 */
+            p.calOut ? card({
+              flex:1, padding:'10px 12px', borderRadius:'12px',
+              background:'rgba(72,199,142,0.08)', border:'1px solid rgba(72,199,142,0.15)',
+            },
+              card({ fontSize:'10px', color:'rgba(72,199,142,0.7)', marginBottom:'3px' }, '消耗'),
+              card({ fontSize:'18px', fontWeight:700, color:'#48c78e' }, p.calOut),
+              card({ fontSize:'9px', color:'rgba(255,255,255,0.25)' }, 'kcal')
+            ) : null,
+            /* 净值 */
+            p.calNet ? card({
+              flex:1, padding:'10px 12px', borderRadius:'12px',
+              background:'rgba(99,179,237,0.08)', border:'1px solid rgba(99,179,237,0.15)',
+            },
+              card({ fontSize:'10px', color:'rgba(99,179,237,0.7)', marginBottom:'3px' }, '净值'),
+              card({ fontSize:'18px', fontWeight:700, color: netColor }, p.calNet),
+              card({ fontSize:'9px', color:'rgba(255,255,255,0.25)' }, 'kcal')
+            ) : null
+          )
+        ) : null,
+
+        /* ─── 运动 ─── */
+        p.exercise ? card({
+          display:'flex', alignItems:'center', gap:'10px',
+          padding:'11px 14px', marginBottom:'14px',
+          background:'rgba(255,255,255,0.04)', borderRadius:'14px',
+          border:'1px solid rgba(255,255,255,0.07)',
+        },
+          card({ fontSize:'20px', flexShrink:0 }, '🏃'),
+          card({ flex:1, fontSize:'13px', color:'rgba(255,255,255,0.75)', lineHeight:1.4 }, p.exercise)
+        ) : null,
+
+        /* ─── 饮食 ─── */
+        p.diet ? card({
+          display:'flex', alignItems:'center', gap:'10px',
+          padding:'11px 14px', marginBottom:'14px',
+          background:'rgba(255,255,255,0.04)', borderRadius:'14px',
+          border:'1px solid rgba(255,255,255,0.07)',
+        },
+          card({ fontSize:'20px', flexShrink:0 }, '🥗'),
+          card({ flex:1, fontSize:'13px', color:'rgba(255,255,255,0.75)', lineHeight:1.4 }, p.diet)
+        ) : null,
+
+        /* ─── AI 建议 ─── */
+        card({
+          padding:'13px 15px',
+          background:'linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.12))',
+          border:'1px solid rgba(99,102,241,0.25)',
+          borderRadius:'14px',
+          marginBottom:'14px',
+        },
+          card({ fontSize:'12px', color:'rgba(255,255,255,0.75)', lineHeight:1.7 }, '💡 '+p.tip)
         ),
-        React.createElement('div', {style: S.progMeta},
-          React.createElement('span', null, '今日目标'),
-          React.createElement('span', null, calIn+' / '+calGoal+' kcal')
+
+        /* ─── 底部品牌 ─── */
+        card({ display:'flex', justifyContent:'flex-end' },
+          card({ fontSize:'10px', color:'rgba(255,255,255,0.18)', letterSpacing:'0.5px' }, '瘦得漂亮 AI')
         )
-      ),
-      React.createElement('div', {style: S.exBox},
-        React.createElement('div', {style: S.exIcon}, exIcon),
-        React.createElement('div', {style: {flex:1}},
-          React.createElement('div', {style: S.exName}, exType),
-          exDur ? React.createElement('div', {style: S.exDetail}, exDur+' 分钟') : null
-        ),
-        calOut ? React.createElement('div', {style: S.exCal}, calOut+' kcal') : null
-      ),
-      tip ? React.createElement('div', {style: S.tipBox},
-        React.createElement('div', {style: S.tipText}, '💡 '+tip)
-      ) : null,
-      React.createElement('div', {style: S.footer},
-        React.createElement('div', {style: S.brand}, '瘦得漂亮 AI'),
-        gap !== null ? React.createElement('div', {style: S.goalTxt},
-          '距目标还差 ',
-          React.createElement('span', {style: S.goalHi}, gap+' kg')
-        ) : null
       )
     );
   }
