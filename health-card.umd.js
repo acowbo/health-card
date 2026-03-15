@@ -140,8 +140,10 @@
     );
   }
 
-  // 同时提供 default 属性，兼容平台按 Webpack 规范查找
-  HealthCard.default = HealthCard;
-
-  return HealthCard;
+  // 按 Webpack ES module UMD 标准格式导出
+  // 平台加载后访问 window.HealthCard.default 得到组件
+  return {
+    __esModule: true,
+    default: HealthCard
+  };
 }));
