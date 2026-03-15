@@ -140,10 +140,10 @@
     );
   }
 
-  // 按 Webpack ES module UMD 标准格式导出
-  // 平台加载后访问 window.HealthCard.default 得到组件
+  // 平台查找逻辑：window[LibraryName][ComponentName]
+  // LibraryName = "HealthCard"（UMD全局名），ComponentName = "HealthCard"（平台填写）
+  // 所以平台执行 window.HealthCard.HealthCard，factory 必须返回 { HealthCard: fn }
   return {
-    __esModule: true,
-    default: HealthCard
+    HealthCard: HealthCard
   };
 }));
