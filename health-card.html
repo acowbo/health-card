@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>每日健康总结</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 12px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 380px;
+      background: linear-gradient(145deg, #1a1a2e, #16213e);
+      border-radius: 24px;
+      padding: 24px;
+      color: #fff;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(99,179,237,0.15), transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* 顶部 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .date-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 4px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .status-badge {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-great  { background: rgba(72,199,142,0.2); color: #48c78e; border: 1px solid rgba(72,199,142,0.4); }
+    .status-good   { background: rgba(99,179,237,0.2); color: #63b3ed; border: 1px solid rgba(99,179,237,0.4); }
+    .status-poor   { background: rgba(252,129,74,0.2); color: #fc814a; border: 1px solid rgba(252,129,74,0.4); }
+
+    /* 体重区 */
+    .weight-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      margin-bottom: 22px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .weight-main {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .weight-value {
+      font-size: 48px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #63b3ed, #9f7aea);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+
+    .weight-unit {
+      font-size: 16px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .weight-change {
+      font-size: 13px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .weight-down { background: rgba(72,199,142,0.15); color: #48c78e; }
+    .weight-up   { background: rgba(252,129,74,0.15); color: #fc814a; }
+    .weight-flat { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+
+    .weight-target {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      margin-left: auto;
+      align-self: flex-end;
+    }
+
+    /* 热量区 */
+    .calorie-section { margin-bottom: 20px; }
+
+    .section-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+    }
+
+    .calorie-numbers {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .cal-item { text-align: center; }
+    .cal-value { font-size: 22px; font-weight: 700; }
+    .cal-label { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .cal-in    .cal-value { color: #fc814a; }
+    .cal-out   .cal-value { color: #48c78e; }
+    .cal-net   .cal-value { color: #9f7aea; }
+
+    .divider { color: rgba(255,255,255,0.15); font-size: 20px; align-self: center; }
+
+    /* 进度条 */
+    .progress-wrap { margin-bottom: 6px; }
+
+    .progress-bar-bg {
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 1s ease;
+    }
+    .fill-normal  { background: linear-gradient(90deg, #63b3ed, #9f7aea); }
+    .fill-over    { background: linear-gradient(90deg, #fc814a, #f56565); }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* 运动区 */
+    .exercise-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 14px;
+      margin-bottom: 18px;
+    }
+
+    .exercise-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #48c78e, #38b2ac);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .exercise-info { flex: 1; }
+    .exercise-name { font-size: 14px; font-weight: 600; }
+    .exercise-detail { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .exercise-cal { font-size: 13px; font-weight: 700; color: #48c78e; }
+
+    /* Tip */
+    .tip-box {
+      background: linear-gradient(135deg, rgba(99,179,237,0.12), rgba(159,122,234,0.12));
+      border: 1px solid rgba(99,179,237,0.2);
+      border-radius: 14px;
+      padding: 12px 16px;
+    }
+
+    .tip-text {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+    }
+
+    .tip-text::before {
+      content: '💡 ';
+    }
+
+    /* 底部 */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .brand { font-size: 11px; color: rgba(255,255,255,0.2); }
+    .progress-to-goal { font-size: 11px; color: rgba(255,255,255,0.35); }
+    .progress-to-goal span { color: #9f7aea; font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="card" id="healthCard">
+
+  <!-- 顶部 -->
+  <div class="header">
+    <div>
+      <div class="date-label" id="dateLabel">今日健康总结</div>
+      <div class="title">健康日报 📋</div>
+    </div>
+    <div class="status-badge" id="statusBadge">优秀</div>
+  </div>
+
+  <!-- 体重 -->
+  <div class="weight-row">
+    <div class="weight-main">
+      <div class="weight-value" id="weightValue">—</div>
+      <div class="weight-unit">kg</div>
+    </div>
+    <div class="weight-change" id="weightChange">—</div>
+    <div class="weight-target" id="weightTarget">目标 — kg</div>
+  </div>
+
+  <!-- 热量 -->
+  <div class="calorie-section">
+    <div class="section-label">热量收支</div>
+    <div class="calorie-numbers">
+      <div class="cal-item cal-in">
+        <div class="cal-value" id="calIn">—</div>
+        <div class="cal-label">摄入 kcal</div>
+      </div>
+      <div class="divider">·</div>
+      <div class="cal-item cal-out">
+        <div class="cal-value" id="calOut">—</div>
+        <div class="cal-label">消耗 kcal</div>
+      </div>
+      <div class="divider">·</div>
+      <div class="cal-item cal-net">
+        <div class="cal-value" id="calNet">—</div>
+        <div class="cal-label">净值 kcal</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill fill-normal" id="calProgressBar" style="width: 0%"></div>
+      </div>
+      <div class="progress-meta">
+        <span>今日目标</span>
+        <span id="calProgressText">— / — kcal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 运动 -->
+  <div class="exercise-section">
+    <div class="exercise-icon" id="exerciseIcon">🏃</div>
+    <div class="exercise-info">
+      <div class="exercise-name" id="exerciseName">—</div>
+      <div class="exercise-detail" id="exerciseDetail">—</div>
+    </div>
+    <div class="exercise-cal" id="exerciseCal">— kcal</div>
+  </div>
+
+  <!-- Tip -->
+  <div class="tip-box">
+    <div class="tip-text" id="tipText">正在加载...</div>
+  </div>
+
+  <!-- 底部 -->
+  <div class="footer">
+    <div class="brand">瘦得漂亮 AI</div>
+    <div class="progress-to-goal" id="goalProgress">距目标还差 <span>— kg</span></div>
+  </div>
+
+</div>
+
+<script>
+  // 从平台传入的参数（百宝箱会将卡片参数注入到 window.__card_params__）
+  // 本地预览时使用 mockData
+  const mockData = {
+    date: "2026年3月15日",
+    weight: 67.5,
+    weightChange: -0.3,
+    targetWeight: 62,
+    caloriesIn: 1480,
+    caloriesOut: 320,
+    calorieTarget: 1650,
+    exerciseType: "跑步",
+    exerciseDuration: 35,
+    exerciseIcon: "🏃",
+    status: "良好",
+    tip: "今日热量控制得不错！晚餐蛋白质摄入偏少，明天午饭可以加一个鸡蛋或一份豆腐。"
+  };
+
+  function getParams() {
+    try {
+      // 百宝箱注入方式
+      if (window.__card_params__) return JSON.parse(window.__card_params__);
+      // URL 参数方式（备用）
+      const p = new URLSearchParams(location.search).get('data');
+      if (p) return JSON.parse(decodeURIComponent(p));
+    } catch(e) {}
+    return mockData;
+  }
+
+  function render(d) {
+    const today = new Date();
+    document.getElementById('dateLabel').textContent =
+      d.date || `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+
+    // 体重
+    document.getElementById('weightValue').textContent = d.weight ?? '—';
+    document.getElementById('weightTarget').textContent = `目标 ${d.targetWeight ?? '—'} kg`;
+
+    const diff = d.weightChange ?? 0;
+    const changeEl = document.getElementById('weightChange');
+    if (diff < 0) {
+      changeEl.textContent = `↓ ${Math.abs(diff)} kg`;
+      changeEl.className = 'weight-change weight-down';
+    } else if (diff > 0) {
+      changeEl.textContent = `↑ ${diff} kg`;
+      changeEl.className = 'weight-change weight-up';
+    } else {
+      changeEl.textContent = '持平';
+      changeEl.className = 'weight-change weight-flat';
+    }
+
+    // 热量
+    const calIn  = d.caloriesIn  ?? 0;
+    const calOut = d.caloriesOut ?? 0;
+    const calNet = calIn - calOut;
+    document.getElementById('calIn').textContent  = calIn;
+    document.getElementById('calOut').textContent = calOut;
+    document.getElementById('calNet').textContent = (calNet > 0 ? '+' : '') + calNet;
+
+    const target  = d.calorieTarget ?? 1650;
+    const pct     = Math.min((calIn / target) * 100, 100);
+    const bar     = document.getElementById('calProgressBar');
+    bar.style.width = pct + '%';
+    if (calIn > target) bar.className = 'progress-bar-fill fill-over';
+    document.getElementById('calProgressText').textContent = `${calIn} / ${target} kcal`;
+
+    // 运动
+    document.getElementById('exerciseIcon').textContent   = d.exerciseIcon || '🏃';
+    document.getElementById('exerciseName').textContent   = d.exerciseType   || '暂无运动记录';
+    document.getElementById('exerciseDetail').textContent = d.exerciseDuration ? `${d.exerciseDuration} 分钟` : '';
+    document.getElementById('exerciseCal').textContent    = calOut ? `${calOut} kcal` : '';
+
+    // 状态
+    const badge = document.getElementById('statusBadge');
+    const statusMap = { '优秀': 'status-great', '良好': 'status-good', '需改善': 'status-poor' };
+    badge.textContent = d.status || '良好';
+    badge.className = `status-badge ${statusMap[d.status] || 'status-good'}`;
+
+    // Tip
+    document.getElementById('tipText').textContent = d.tip || '';
+
+    // 距目标
+    if (d.weight && d.targetWeight) {
+      const gap = (d.weight - d.targetWeight).toFixed(1);
+      document.getElementById('goalProgress').innerHTML =
+        gap > 0 ? `距目标还差 <span>${gap} kg</span>` : `🎉 已达成目标！`;
+    }
+  }
+
+  render(getParams());
+</script>
+</body>
+</html>
